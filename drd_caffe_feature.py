@@ -108,7 +108,9 @@ if __name__ == '__main__':
     net, transformer = load_model(caffenet_model_file, caffenet_pretrained_model, ilsvrc_2012_mean_file)
 
     # save caffenet features 
-    trainLabels = bz.Data(data_dir + 'diabetic_ret/trainLabels.csv')
+    #label_csv = bz.Data(data_dir + 'diabetic_ret/trainLabels.csv')
+    label_csv = bz.Data(data_dir + 'diabetic_ret/sampleSubmission.csv')
+
     results_dir= data_dir + 'diabetic_ret/results/'
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
@@ -117,9 +119,9 @@ if __name__ == '__main__':
     fc7_stack = []
     fc8_stack = []
 
-    for img_name in trainLabels['image']:
-        train_img = data_dir + 'diabetic_ret/train/' + img_name + '.jpeg'
-        forward_pass(train_img, net, transformer)
+    for img_name in label_csv['image']:
+        img = data_dir + 'diabetic_ret/test/' + img_name + '.jpeg'
+        forward_pass(img, net, transformer)
         fc6, fc6_filters = extract_layer(net, 'fc6')
         fc7, fc7_filters = extract_layer(net, 'fc7')
         fc8, fc8_filters = extract_layer(net, 'fc8')
@@ -128,9 +130,9 @@ if __name__ == '__main__':
         fc7_stack.append(fc7[0])
         fc8_stack.append(fc8[0])
 
-        print train_img
+        print img
         
-    np.save(results_dir + 'fc6_caffenet.npy', np.array(fc6_stack))
-    np.save(results_dir + 'fc7_caffenet.npy', np.array(fc7_stack))
-    np.save(results_dir + 'fc8_caffenet.npy', np.array(fc8_stack))
+    np.save(results_dir + 'fc6_caffenet_test.npy', np.array(fc6_stack))
+    np.save(results_dir + 'fc7_caffenet_test.npy', np.array(fc7_stack))
+    np.save(results_dir + 'fc8_caffenet_test.npy', np.array(fc8_stack))
     
