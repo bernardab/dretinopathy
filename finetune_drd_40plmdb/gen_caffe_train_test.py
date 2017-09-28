@@ -13,13 +13,10 @@ data_dir = os.environ['DATA_DIR']
 train_csv = bz.Data(data_dir + 'diabetic_ret/trainLabels.csv')
 
 train = []
-l = []
 for img_name, label in train_csv:
-    #train.append(data_dir + 'diabetic_ret/train/' + img_name + '.jpeg ' + str(label))
-    train.append(data_dir + 'diabetic_ret/train_resized/' + img_name + '.jpeg ' + str(label))
-    l.append(label)
+    train.append(data_dir + 'diabetic_ret/train/' + img_name + '.jpeg ' + str(label))
+    #train.append(img_name + '.jpeg ' + str(label))
 random.shuffle(train)
 
-# random shuffle
 bz.odo(train[len(train)/5:], 'train.txt', sep='/n')
 bz.odo(train[:len(train)/5], 'val.txt', sep='/n')

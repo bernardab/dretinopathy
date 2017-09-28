@@ -1,7 +1,5 @@
 """
-used caffenet as fixed feature extractor
-http://nbviewer.ipython.org/github/BVLC/caffe/blob/master/examples/filter_visualization.ipynb
-
+classify testing samples using finetuned drd model
 """
 
 import os
@@ -58,50 +56,11 @@ def forward_pass(img_fname, net, transformer):
     return out
 
     
-def extract_layer(net, layer):
-    """Extract output features and filters for the specified layer
-
-    :param net: forward net object
-    :param layer: layer name
-    :returns: a tuple ofoutput features and filters
-    :rtype:  tuple
-
-    usage example:  extract_layer(caffenet_dir,'fc6')
-
-    """
-
-    fea = net.blobs[layer].data
-    filters = net.params[layer][0].data
-
-    return fea, filters
-
-
-def vis_square(data, padsize=1, padval=0):
-    """
-    take an array of shape (n, height, width) or (n, height, width, channels)
-    and visualize each (height, width) thing in a grid of size approx. sqrt(n) by sqrt(n)
-
-    """
-    data -= data.min()
-    data /= data.max()
-    
-    # force the number of filters to be square
-    n = int(np.ceil(np.sqrt(data.shape[0])))
-    padding = ((0, n ** 2 - data.shape[0]), (0, padsize), (0, padsize)) + ((0, 0),) * (data.ndim - 3)
-    data = np.pad(data, padding, mode='constant', constant_values=(padval, padval))
-    
-    # tile the filters into an image
-    data = data.reshape((n, n) + data.shape[1:]).transpose((0, 2, 1, 3) + tuple(range(4, data.ndim + 1)))
-    data = data.reshape((n * data.shape[1], n * data.shape[3]) + data.shape[4:])
-    
-    plt.imshow(data)
-
-    
 if __name__ == '__main__':
 
     #load caffenet  model
-    caffenet_model_file = caffe_root + '../../models/bvlc_reference_caffenet/deploy.prototxt'
-    caffenet_pretrained_model = caffe_root + '../../models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel'
+    caffenet_model_file = 'models/deploy.prototxt'
+    caffenet_pretrained_model = 'models/diabetic_ret_finetune_0.caffemodel'
     ilsvrc_2012_mean_file = caffe_root + 'python/caffe/imagenet/ilsvrc_2012_mean.npy'
     net, transformer = load_model(caffenet_model_file, caffenet_pretrained_model, ilsvrc_2012_mean_file)
 
@@ -112,47 +71,27 @@ if __name__ == '__main__':
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
-    fc6_stack = []
+    # check if model already exists here and load if it already exists
     fc7_stack = []
-    fc8_stack = []
+    prob_stack = []
     for img_name in train_csv['image']:
         img = data_dir + 'diabetic_ret/train/' + img_name + '.jpeg'
         forward_pass(img, net, transformer)
-
-        fc6, fc6_filters = extract_layer(net, 'fc6')
-        fc7, fc7_filters = extract_layer(net, 'fc7')
-        fc8, fc8_filters = extract_layer(net, 'fc8')
-
-        fc6_stack.append(fc6[0].copy())
-        fc7_stack.append(fc7[0].copy())
-        fc8_stack.append(fc8[0].copy())
-
+        fc7_stack.append(net.blobs['fc7'].data[0])
+        prob_stack.append(net.blobs['prob'].data[0])
         print 'train ', img_name
 
-    np.save(results_dir + 'fc6_caffenet_train.npy', np.array(fc6_stack))
-    np.save(results_dir + 'fc7_caffenet_train.npy', np.array(fc7_stack))
-    np.save(results_dir + 'fc8_caffenet_train.npy', np.array(fc8_stack))
+    np.save(results_dir + 'fc7_drd_train.npy', np.array(fc7_stack))
+    np.save(results_dir + 'prob_drd_train.npy', np.array(prob_stack))
 
-    
-    fc6_stack = []
     fc7_stack = []
-    fc8_stack = []
-
+    prob_stack = []
     for img_name in test_csv['image']:
         img = data_dir + 'diabetic_ret/test/' + img_name + '.jpeg'
         forward_pass(img, net, transformer)
-
-        fc6, fc6_filters = extract_layer(net, 'fc6')
-        fc7, fc7_filters = extract_layer(net, 'fc7')
-        fc8, fc8_filters = extract_layer(net, 'fc8')
-
-        fc6_stack.append(fc6[0].copy())
-        fc7_stack.append(fc7[0].copy())
-        fc8_stack.append(fc8[0].copy())
-
+        fc7_stack.append(net.blobs['fc7'].data[0])
+        prob_stack.append(net.blobs['prob'].data[0])
         print 'test ', img_name
 
-    np.save(results_dir + 'fc6_caffenet_test.npy', np.array(fc6_stack))
-    np.save(results_dir + 'fc7_caffenet_test.npy', np.array(fc7_stack))
-    np.save(results_dir + 'fc8_caffenet_test.npy', np.array(fc8_stack))
-    
+    np.save(results_dir + 'fc7_drd_test.npy', np.array(fc7_stack))
+    np.save(results_dir + 'prob_drd_test.npy', np.array(prob_stack))

@@ -1,0 +1,19 @@
+* methods to try
+** caffenet
+1. caffenet features with svm classification
+2. caffenet features with gradient boosted trees
+3. caffenet features with random forests 
+
+** finetuned caffenet 
+- with direct output probability
+- with the best classifier from above
+
+** finetuned googlenet
+- with direct output probability
+- with the best classifier from above
+
+
+** finetuned vggnet
+- with direct output probability
+- with the best classifier from above
+

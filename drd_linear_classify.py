@@ -21,9 +21,15 @@ if __name__ == '__main__':
     train_labels = list(bz.Data(data_dir + 'diabetic_ret/trainLabels.csv')['level'])
     test_features = np.load(results_dir + 'fc6_caffenet_test.npy')
     test_imgs = list(bz.Data(data_dir + 'diabetic_ret/sampleSubmission.csv')['image'])
-     
+
+
+    # get half of training featuers
+    ns = train_features.shape[0]/2
+    train_features = train_features[:ns]
+    train_labels = train_labels[:ns]
+
     #  svm classifier evaluation with cross validation
-    eval = 1
+    eval = 0
     clf = svm.SVC(kernel='linear', C=1)
     #clf = linear_model.SGDClassifier()
     if eval:
@@ -35,7 +41,7 @@ if __name__ == '__main__':
         # predict test_set and save as csv
         test_labels = clf.predict(test_features)
         test_labels_df = bz.Data(zip(test_imgs, test_labels), fields=['image','level'])
-        bz.odo(test_labels_df, test_result)
+        
 
     
     
